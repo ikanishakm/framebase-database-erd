@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Framebase — Database ERD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e5e5e5;
+            min-height: 100vh;
+        }
+        header {
+            padding: 32px 48px 24px;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+        }
+        header p {
+            font-size: 13px;
+            color: #737373;
+            margin-top: 4px;
+        }
+        .legend {
+            display: flex;
+            gap: 24px;
+            padding: 16px 48px;
+            border-bottom: 1px solid #1a1a1a;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #a3a3a3;
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .dot-auth { background: #a78bfa; }
+        .dot-billing { background: #f472b6; }
+        .dot-collab { background: #38bdf8; }
+        .dot-widgets { background: #34d399; }
+        .dot-inbox { background: #fb923c; }
+        .dot-system { background: #737373; }
+
+        .diagram-container {
+            padding: 32px 48px;
+            overflow-x: auto;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+        .mermaid svg {
+            max-width: 100%;
+        }
+
+        /* Table cards below */
+        .tables-section {
+            padding: 32px 48px;
+            border-top: 1px solid #1a1a1a;
+        }
+        .tables-section h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 24px;
+        }
+        .tables-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 16px;
+        }
+        .table-card {
+            background: #141414;
+            border: 1px solid #262626;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .table-header {
+            padding: 14px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #262626;
+        }
+        .table-header .tag {
+            font-size: 10px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 99px;
+            color: #fff;
+        }
+        .tag-auth { background: #7c3aed; }
+        .tag-billing { background: #db2777; }
+        .tag-collab { background: #0284c7; }
+        .tag-widgets { background: #059669; }
+        .tag-inbox { background: #ea580c; }
+        .tag-system { background: #525252; }
+
+        .table-rows {
+            padding: 8px 0;
+        }
+        .table-row {
+            display: grid;
+            grid-template-columns: 1fr 100px 1fr;
+            padding: 5px 18px;
+            font-size: 12px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+        .table-row:hover {
+            background: #1a1a1a;
+        }
+        .col-name { color: #e5e5e5; }
+        .col-type { color: #737373; }
+        .col-note { color: #525252; font-style: italic; font-family: -apple-system, sans-serif; }
+        .col-name .badge {
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 3px;
+            margin-left: 6px;
+            font-family: -apple-system, sans-serif;
+            vertical-align: middle;
+        }
+        .badge-pk { background: #422006; color: #fb923c; }
+        .badge-fk { background: #172554; color: #60a5fa; }
+        .badge-uk { background: #14532d; color: #4ade80; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Framebase — Database Schema</h1>
+    <p>11 tables · Supabase Postgres · Next.js + Server Actions</p>
+</header>
+
+<div class="legend">
+    <div class="legend-item"><div class="legend-dot dot-auth"></div>Auth</div>
+    <div class="legend-item"><div class="legend-dot dot-billing"></div>Billing</div>
+    <div class="legend-item"><div class="legend-dot dot-collab"></div>Collaboration</div>
+    <div class="legend-item"><div class="legend-dot dot-widgets"></div>Widgets</div>
+    <div class="legend-item"><div class="legend-dot dot-inbox"></div>Inbox / Interactions</div>
+    <div class="legend-item"><div class="legend-dot dot-system"></div>System</div>
+</div>
+
+<div class="diagram-container">
+    <pre class="mermaid">
+erDiagram
+    users {
+        uuid id PK
+        text email UK
+        text full_name
+        text avatar_url
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    accounts {
+        uuid id PK
+        text name
+        text slug UK
+        enum plan
+        text stripe_customer_id UK
+        text stripe_subscription_id
+        timestamptz trial_ends_at
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    account_members {
+        uuid id PK
+        uuid account_id FK
+        uuid user_id FK
+        enum role
+        timestamptz invited_at
+        timestamptz accepted_at
+        timestamptz created_at
+    }
+
+    sites {
+        uuid id PK
+        uuid account_id FK
+        text name
+        text slug UK
+        text domain
+        jsonb settings
+        boolean is_active
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    site_members {
+        uuid id PK
+        uuid site_id FK
+        uuid user_id FK
+        enum role
+        timestamptz invited_at
+        timestamptz accepted_at
+        timestamptz created_at
+    }
+
+    widgets {
+        uuid id PK
+        uuid site_id FK
+        enum type
+        text name
+        jsonb config
+        text embed_key UK
+        boolean is_active
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    interactions {
+        uuid id PK
+        uuid widget_id FK
+        uuid site_id FK
+        uuid account_id FK
+        enum type
+        enum status
+        text contact_email
+        text contact_name
+        jsonb metadata
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    messages {
+        uuid id PK
+        uuid interaction_id FK
+        uuid sender_id FK
+        enum sender_type
+        text body
+        jsonb attachments
+        timestamptz created_at
+    }
+
+    submissions {
+        uuid id PK
+        uuid interaction_id FK
+        jsonb fields
+        text source_url
+        text ip_address
+        text user_agent
+        timestamptz created_at
+    }
+
+    bookings {
+        uuid id PK
+        uuid interaction_id FK
+        timestamptz starts_at
+        timestamptz ends_at
+        int duration_minutes
+        enum status
+        text timezone
+        jsonb form_data
+        text calendar_event_id
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    invitations {
+        uuid id PK
+        uuid account_id FK
+        uuid site_id FK
+        text email
+        enum scope
+        enum role
+        uuid invited_by FK
+        text token UK
+        timestamptz expires_at
+        timestamptz accepted_at
+        timestamptz created_at
+    }
+
+    usage_counters {
+        uuid id PK
+        uuid account_id FK
+        int site_count
+        int widget_count
+        int interaction_count
+        int member_count
+        timestamptz period_start
+        timestamptz period_end
+        timestamptz updated_at
+    }
+
+    users ||--o{ account_members : "belongs to"
+    accounts ||--o{ account_members : "has"
+    accounts ||--o{ sites : "contains"
+    accounts ||--|| usage_counters : "tracks"
+    sites ||--o{ site_members : "has"
+    users ||--o{ site_members : "collaborates"
+    sites ||--o{ widgets : "has"
+    widgets ||--o{ interactions : "generates"
+    sites ||--o{ interactions : "scoped to"
+    accounts ||--o{ interactions : "rolls up"
+    interactions ||--o{ messages : "thread"
+    interactions ||--o| submissions : "data"
+    interactions ||--o| bookings : "booking"
+    accounts ||--o{ invitations : "sends"
+    sites ||--o{ invitations : "sends"
+    users ||--o{ messages : "sends"
+    </pre>
+</div>
+
+<div class="tables-section">
+    <h2>Table Definitions</h2>
+    <div class="tables-grid">
+
+        <!-- USERS -->
+        <div class="table-card">
+            <div class="table-header">users <span class="tag tag-auth">Auth</span></div>
+            <div class="table-rows">
+                <div class="table-row"><span class="col-name">id <span class="badge badge-pk">PK</span></span><span class="col-type">uuid</span><span class="col-note">Supabase auth.users</span></div>
+                <div class="table-row"><span class="col-name">email <span class="badge badge-uk">UK</span></span><span class="col-type">text</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">full_name</span><span class="col-type">text</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">avatar_url</span><span class="col-type">text</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">created_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">updated_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+            </div>
+        </div>
+
+        <!-- ACCOUNTS -->
+        <div class="table-card">
+            <div class="table-header">accounts <span class="tag tag-billing">Billing</span></div>
+            <div class="table-rows">
+                <div class="table-row"><span class="col-name">id <span class="badge badge-pk">PK</span></span><span class="col-type">uuid</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">name</span><span class="col-type">text</span><span class="col-note">e.g. "Sam's Agency"</span></div>
+                <div class="table-row"><span class="col-name">slug <span class="badge badge-uk">UK</span></span><span class="col-type">text</span><span class="col-note">URL-friendly</span></div>
+                <div class="table-row"><span class="col-name">plan</span><span class="col-type">enum</span><span class="col-note">free | pro | team</span></div>
+                <div class="table-row"><span class="col-name">stripe_customer_id <span class="badge badge-uk">UK</span></span><span class="col-type">text</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">stripe_subscription_id</span><span class="col-type">text</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">trial_ends_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">created_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">updated_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+            </div>
+        </div>
+
+        <!-- ACCOUNT MEMBERS -->
+        <div class="table-card">
+            <div class="table-header">account_members <span class="tag tag-collab">Collaboration</span></div>
+            <div class="table-rows">
+                <div class="table-row"><span class="col-name">id <span class="badge badge-pk">PK</span></span><span class="col-type">uuid</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">account_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ accounts</span></div>
+                <div class="table-row"><span class="col-name">user_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ users</span></div>
+                <div class="table-row"><span class="col-name">role</span><span class="col-type">enum</span><span class="col-note">owner | admin | member</span></div>
+                <div class="table-row"><span class="col-name">invited_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">accepted_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">created_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+            </div>
+        </div>
+
+        <!-- SITES -->
+        <div class="table-card">
+            <div class="table-header">sites <span class="tag tag-collab">Collaboration</span></div>
+            <div class="table-rows">
+                <div class="table-row"><span class="col-name">id <span class="badge badge-pk">PK</span></span><span class="col-type">uuid</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">account_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ accounts</span></div>
+                <div class="table-row"><span class="col-name">name</span><span class="col-type">text</span><span class="col-note">e.g. "clientone.com"</span></div>
+                <div class="table-row"><span class="col-name">slug <span class="badge badge-uk">UK</span></span><span class="col-type">text</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">domain</span><span class="col-type">text</span><span class="col-note">optional custom domain</span></div>
+                <div class="table-row"><span class="col-name">settings</span><span class="col-type">jsonb</span><span class="col-note">site-level config</span></div>
+                <div class="table-row"><span class="col-name">is_active</span><span class="col-type">boolean</span><span class="col-note">soft limit toggle</span></div>
+                <div class="table-row"><span class="col-name">created_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">updated_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+            </div>
+        </div>
+
+        <!-- SITE MEMBERS -->
+        <div class="table-card">
+            <div class="table-header">site_members <span class="tag tag-collab">Collaboration</span></div>
+            <div class="table-rows">
+                <div class="table-row"><span class="col-name">id <span class="badge badge-pk">PK</span></span><span class="col-type">uuid</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">site_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ sites</span></div>
+                <div class="table-row"><span class="col-name">user_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ users</span></div>
+                <div class="table-row"><span class="col-name">role</span><span class="col-type">enum</span><span class="col-note">site_admin | editor | viewer</span></div>
+                <div class="table-row"><span class="col-name">invited_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">accepted_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">created_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+            </div>
+        </div>
+
+        <!-- WIDGETS -->
+        <div class="table-card">
+            <div class="table-header">widgets <span class="tag tag-widgets">Widgets</span></div>
+            <div class="table-rows">
+                <div class="table-row"><span class="col-name">id <span class="badge badge-pk">PK</span></span><span class="col-type">uuid</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">site_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ sites</span></div>
+                <div class="table-row"><span class="col-name">type</span><span class="col-type">enum</span><span class="col-note">chat | booking | email_collector | contact_form</span></div>
+                <div class="table-row"><span class="col-name">name</span><span class="col-type">text</span><span class="col-note">user label</span></div>
+                <div class="table-row"><span class="col-name">config</span><span class="col-type">jsonb</span><span class="col-note">styling, fields, behaviour</span></div>
+                <div class="table-row"><span class="col-name">embed_key <span class="badge badge-uk">UK</span></span><span class="col-type">text</span><span class="col-note">public script key</span></div>
+                <div class="table-row"><span class="col-name">is_active</span><span class="col-type">boolean</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">created_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">updated_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+            </div>
+        </div>
+
+        <!-- INTERACTIONS -->
+        <div class="table-card">
+            <div class="table-header">interactions <span class="tag tag-inbox">Inbox</span></div>
+            <div class="table-rows">
+                <div class="table-row"><span class="col-name">id <span class="badge badge-pk">PK</span></span><span class="col-type">uuid</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">widget_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ widgets</span></div>
+                <div class="table-row"><span class="col-name">site_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ sites (denorm)</span></div>
+                <div class="table-row"><span class="col-name">account_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ accounts (denorm)</span></div>
+                <div class="table-row"><span class="col-name">type</span><span class="col-type">enum</span><span class="col-note">message | submission | booking</span></div>
+                <div class="table-row"><span class="col-name">status</span><span class="col-type">enum</span><span class="col-note">new | open | replied | closed | spam</span></div>
+                <div class="table-row"><span class="col-name">contact_email</span><span class="col-type">text</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">contact_name</span><span class="col-type">text</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">metadata</span><span class="col-type">jsonb</span><span class="col-note">flexible per type</span></div>
+                <div class="table-row"><span class="col-name">created_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">updated_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+            </div>
+        </div>
+
+        <!-- MESSAGES -->
+        <div class="table-card">
+            <div class="table-header">messages <span class="tag tag-inbox">Inbox</span></div>
+            <div class="table-rows">
+                <div class="table-row"><span class="col-name">id <span class="badge badge-pk">PK</span></span><span class="col-type">uuid</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">interaction_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ interactions</span></div>
+                <div class="table-row"><span class="col-name">sender_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ users (null = visitor)</span></div>
+                <div class="table-row"><span class="col-name">sender_type</span><span class="col-type">enum</span><span class="col-note">visitor | user</span></div>
+                <div class="table-row"><span class="col-name">body</span><span class="col-type">text</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">attachments</span><span class="col-type">jsonb</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">created_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+            </div>
+        </div>
+
+        <!-- SUBMISSIONS -->
+        <div class="table-card">
+            <div class="table-header">submissions <span class="tag tag-inbox">Inbox</span></div>
+            <div class="table-rows">
+                <div class="table-row"><span class="col-name">id <span class="badge badge-pk">PK</span></span><span class="col-type">uuid</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">interaction_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ interactions</span></div>
+                <div class="table-row"><span class="col-name">fields</span><span class="col-type">jsonb</span><span class="col-note">key-value form data</span></div>
+                <div class="table-row"><span class="col-name">source_url</span><span class="col-type">text</span><span class="col-note">page of submission</span></div>
+                <div class="table-row"><span class="col-name">ip_address</span><span class="col-type">text</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">user_agent</span><span class="col-type">text</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">created_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+            </div>
+        </div>
+
+        <!-- BOOKINGS -->
+        <div class="table-card">
+            <div class="table-header">bookings <span class="tag tag-inbox">Inbox</span></div>
+            <div class="table-rows">
+                <div class="table-row"><span class="col-name">id <span class="badge badge-pk">PK</span></span><span class="col-type">uuid</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">interaction_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ interactions</span></div>
+                <div class="table-row"><span class="col-name">starts_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">ends_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">duration_minutes</span><span class="col-type">int</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">status</span><span class="col-type">enum</span><span class="col-note">confirmed | cancelled | rescheduled | completed</span></div>
+                <div class="table-row"><span class="col-name">timezone</span><span class="col-type">text</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">form_data</span><span class="col-type">jsonb</span><span class="col-note">extra fields at booking</span></div>
+                <div class="table-row"><span class="col-name">calendar_event_id</span><span class="col-type">text</span><span class="col-note">external cal sync</span></div>
+                <div class="table-row"><span class="col-name">created_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">updated_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+            </div>
+        </div>
+
+        <!-- INVITATIONS -->
+        <div class="table-card">
+            <div class="table-header">invitations <span class="tag tag-system">System</span></div>
+            <div class="table-rows">
+                <div class="table-row"><span class="col-name">id <span class="badge badge-pk">PK</span></span><span class="col-type">uuid</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">account_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ accounts (nullable)</span></div>
+                <div class="table-row"><span class="col-name">site_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ sites (nullable)</span></div>
+                <div class="table-row"><span class="col-name">email</span><span class="col-type">text</span><span class="col-note">invitee</span></div>
+                <div class="table-row"><span class="col-name">scope</span><span class="col-type">enum</span><span class="col-note">account | site</span></div>
+                <div class="table-row"><span class="col-name">role</span><span class="col-type">enum</span><span class="col-note">any account or site role</span></div>
+                <div class="table-row"><span class="col-name">invited_by <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ users</span></div>
+                <div class="table-row"><span class="col-name">token <span class="badge badge-uk">UK</span></span><span class="col-type">text</span><span class="col-note">unique invite link</span></div>
+                <div class="table-row"><span class="col-name">expires_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">accepted_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">created_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+            </div>
+        </div>
+
+        <!-- USAGE COUNTERS -->
+        <div class="table-card">
+            <div class="table-header">usage_counters <span class="tag tag-system">System</span></div>
+            <div class="table-rows">
+                <div class="table-row"><span class="col-name">id <span class="badge badge-pk">PK</span></span><span class="col-type">uuid</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">account_id <span class="badge badge-fk">FK</span></span><span class="col-type">uuid</span><span class="col-note">→ accounts</span></div>
+                <div class="table-row"><span class="col-name">site_count</span><span class="col-type">int</span><span class="col-note">active sites</span></div>
+                <div class="table-row"><span class="col-name">widget_count</span><span class="col-type">int</span><span class="col-note">active widgets</span></div>
+                <div class="table-row"><span class="col-name">interaction_count</span><span class="col-type">int</span><span class="col-note">rolling period total</span></div>
+                <div class="table-row"><span class="col-name">member_count</span><span class="col-type">int</span><span class="col-note">paid seats only</span></div>
+                <div class="table-row"><span class="col-name">period_start</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">period_end</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+                <div class="table-row"><span class="col-name">updated_at</span><span class="col-type">timestamptz</span><span class="col-note"></span></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script>
+    mermaid.initialize({
+        startOnLoad: true,
+        theme: 'dark',
+        er: {
+            layoutDirection: 'TB',
+            entityPadding: 15,
+            fontSize: 12,
+            useMaxWidth: true,
+        },
+        themeVariables: {
+            primaryColor: '#262626',
+            primaryTextColor: '#e5e5e5',
+            primaryBorderColor: '#404040',
+            lineColor: '#525252',
+            secondaryColor: '#1a1a1a',
+            tertiaryColor: '#141414',
+        }
+    });
+</script>
+
+</body>
+</html>
